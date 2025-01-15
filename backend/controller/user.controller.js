@@ -7,7 +7,7 @@ const register = async (req, res) => {
         const {fullname, email, password, phoneNumber, role} = req.body;
         if(!(fullname && email && password && phoneNumber && role)){
             return res.status(400).json({
-                message: "Inaccurate fillings",
+                message: "Please check your details",
                 success: false
             });
         }
@@ -82,7 +82,62 @@ const login = async (req, res) => {
             user, //??
             success: true
         })
-        
+
+    }catch(err){
+        console.log(err);
+    } 
+}
+const logout = async (req, res) => {
+    try{
+        return res.status(200).cookie("token", "", {maxAge: 0}).json({
+            message: "Logged out successfully",
+            success: true
+        })
+    }catch(err){
+        console.log(err)
+    }
+}
+
+const updateProfile = async (req, res) => {
+    try{
+        const {fullname, email, password, phoneNumber, role} = req.body;
+        const file = req.file;
+        if(!(fullname && email && password && phoneNumber && role)){
+            return res.status(400).json({
+                message: "Inaccurate fillings",
+                success: false
+            });
+        }
+        const skillsArray = skills.split(",")
+        const userId = req.id;
+        let user = await User.findById(userId)
+        if(!user){
+            return res.status(400).json({
+                message: "User not found",
+                success: false
+            })
+        }
+        user.fullname = fullname;
+        user.email = email;
+        user.phoneNumber = phoneNumber;
+        user.profile.bio = bio;
+        user.profile.skills = skillsArray
+
+        await user.save();
+
+        user = {
+            _id : user._id,
+            fullname : user.fullname,
+            email : user.email,
+            phoneNumber : user.phoneNumber,
+            role : user.role ,
+            profile : user.profile
+        }
+        return res.status(200).json({
+            message: "Profile updates succesfully",
+            user,
+            success: true
+        })
     }catch(err){
         console.log(err);
     }
